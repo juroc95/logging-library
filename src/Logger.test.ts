@@ -1,19 +1,12 @@
 import "jest-extended";
-import { } from "./Logger";
+import { Logger } from "./Logger";
 
-/* This function is used in the test below to demonstrate how to
- * write tests that check for correct console output. When you
- * start writing your own tests, delete this function and the
- * example test that uses it.
- */
-function exampleFunctionUsingConsole(): void {
-    console.info("test1");
-    console.info("test2");
-}
-
-test("example to show how to test console output", () => {
+test("Test 1", () => {
     // Create an array to store the console output.
+    const errorLogOutput: string[] = [];
+    const warnLogOutput: string[] = [];
     const infoLogOutput: string[] = [];
+    const debugLogOutput: string[] = [];
 
     /* Configure Jest to replace every console.info call in the
      * duration of this test with a function that pushes a message
@@ -21,14 +14,35 @@ test("example to show how to test console output", () => {
      * console.warn, or console.debug, just replace the "info"
      * string with the appropriate method name.
      */
+    jest.spyOn(global.console, "error").mockImplementation((msg: string) => {
+        errorLogOutput.push(msg);
+    });
+    jest.spyOn(global.console, "warn").mockImplementation((msg: string) => {
+        warnLogOutput.push(msg);
+    });
     jest.spyOn(global.console, "info").mockImplementation((msg: string) => {
         infoLogOutput.push(msg);
     });
+    jest.spyOn(global.console, "debug").mockImplementation((msg: string) => {
+        debugLogOutput.push(msg);
+    });
 
-    // Call a function that uses console.info.
-    exampleFunctionUsingConsole();
+    // Test scenario
+    const log1 = new Logger();
+    log1.infoLog("test1");
+    log1.ignoreInfo();
+    log1.infoLog("test2");
+    log1.warnLog("test3");
+    const log2 = new Logger();
+    log2.infoLog("test4");
+    log1.infoLog("test5");
+    log1.displayInfo();
+    log1.infoLog("test6");
 
     // Check that the log output is what we expected; use
     // .toStrictEqual instead of .toBe when comparing arrays.
-    expect(infoLogOutput).toStrictEqual([ "test1", "test2" ]);
+    expect(errorLogOutput).toStrictEqual([ ]);
+    expect(warnLogOutput).toStrictEqual([ "test3" ]);
+    expect(infoLogOutput).toStrictEqual([ "test1", "test4", "test6" ]);
+    expect(debugLogOutput).toStrictEqual([ ]);
 });
